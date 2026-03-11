@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encurtador de URL | lmix.top</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Garante que o QR Code não estoure o container em telas pequenas */
+        .qr-container img { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body class="bg-base-200 min-h-screen flex flex-col" x-data="encurtadorApp()">
+
+<div th:replace="~{fragments :: navbar-principal}"></div>
+
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+    <div class="card w-full max-w-2xl bg-base-100 shadow-2xl border border-base-300 transition-all">
+        <div class="card-body gap-6">
+            <div class="text-center">
+                <span class="text-5xl mb-4 block">🔗</span>
+                <h1 class="text-3xl font-bold text-primary">Encurtador de URL</h1>
+                <p class="text-base-content/60 italic">Gerencie seus links com inteligência.</p>
+            </div>
+
+            <div class="form-control w-full">
+                <div class="join">
+                    <input type="url" 
+                           x-model="urlOriginal" 
+                           placeholder="Cole sua URL longa aqui..." 
+                           class="input input-bordered join-item w-full focus:outline-primary"
+                           :class="error ? 'input-error' : ''"
+                           @keyup.enter="enviar()"
+                           :disabled="loading"/>
+                    <button class="btn btn-primary join-item px-8" 
+                            @click="enviar()" 
+                            :disabled="loading || !urlOriginal">
+                        <span x-show="loading" class="loading loading-spinner loading-xs"></span>
+                        <span x-show="!loading">Encurtar</span>
+                    </button>
+                </div>
+                
+                <label class="label" x-show="error" x-transition x-cloak>
+                    <span class="label-text-alt text-error font-semibold" x-text="errorMessage"></span>
+                </label>
+            </div>
+
+            <div class="bg-base-200 p-4 rounded-lg flex items-start gap-3 opacity-70">
+                <span class="text-info text-lg">💡</span>
+                <p class="text-xs leading-relaxed">
+                    Sua URL curta será gerada no domínio principal <strong>lmix.top</strong>, 
+                    garantindo links mais limpos para compartilhamento.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <input type="checkbox" id="modal-result" class="modal-toggle" :checked="showModal" />
+    <div class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box border border-primary/20 shadow-2xl">
+            <h3 class="font-bold text-2xl text-center mb-6 text-primary">Pronto! 🎉</h3>
+            
+            <div class="flex flex-col items-center gap-8">
+                <div class="qr-container bg-white p-4 rounded-2xl shadow-inner inline-block" x-show="qrCodeBase64">
+                    <img :src="'data:image/png;base64,' + qrCodeBase64" 
+                         alt="QR Code gerado pelo Backend" 
+                         class="w-48 h-48" />
+                </div>
+
+                <div class="form-control w-full">
+                    <div class="join w-full">
+                        <input type="text" :value="urlCurta" class="input input-bordered join-item w-full bg-base-200 font-mono text-sm" readonly />
+                        <button class="btn btn-primary join-item" @click="copiar()">
+                            <span x-text="copiado ? 'Copiado!' : 'Copiar'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-action flex justify-between mt-8">
+                <button class="btn btn-ghost" @click="fecharModal()">Fechar</button>
+                <a :href="urlCurta" target="_blank" class="btn btn-outline btn-primary">Testar Link</a>
+            </div>
+        </div>
+        <label class="modal-backdrop" @click="fecharModal()">Fechar</label>
+    </div>
+</main>
+
+<div th:replace="~{fragments :: footer-principal}"></div>
+
+<script th:inline="javascript">
+    function encurtadorApp() {
+        return {
+            urlOriginal: '',
+            urlCurta: '',
+            qrCodeBase64: '', 
+            loading: false,
+            error: false,
+            errorMessage: '',
+            showModal: false,
+            copiado: false,
+
+            async enviar() {
+                if (!this.validar(this.urlOriginal)) return;
+
+                this.loading = true;
+                this.error = false;
+
+                try {
+                    const response = await fetch('/gerar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: this.urlOriginal }) 
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || 'Erro ao processar no servidor.');
+                    }
+
+                    const data = await response.json();
+                    
+                    // --- Tratamento de Domínio Inteligente ---
+                    const protocol = window.location.protocol;
+                    const hostname = window.location.hostname;
+                    const port = window.location.port ? `:${window.location.port}` : '';
+                    
+                    // Remove o prefixo 'site.' se o usuário estiver na ferramenta de administração
+                    const rootDomain = hostname.replace(/^site\./, '');
+                    
+                    // Monta a URL curta final usando o campo urlEncurtada do DTO
+                    this.urlCurta = `${protocol}//${rootDomain}${port}/${data.urlEncurtada}`;
+                    
+                    // Recebe o Base64 puro do DTO
+                    this.qrCodeBase64 = data.qrCodeBase64;
+                    
+                    this.showModal = true;
+                } catch (e) {
+                    console.error('Erro na requisição:', e);
+                    this.error = true;
+                    this.errorMessage = e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            validar(url) {
+                if (!url) {
+                    this.error = true;
+                    this.errorMessage = 'A URL é obrigatória.';
+                    return false;
+                }
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    this.error = true;
+                    this.errorMessage = 'A URL deve conter o protocolo (http:// ou https://).';
+                    return false;
+                }
+                return true;
+            },
+
+            copiar() {
+                if (!this.urlCurta) return;
+                navigator.clipboard.writeText(this.urlCurta).then(() => {
+                    this.copiado = true;
+                    setTimeout(() => this.copiado = false, 2000);
+                });
+            },
+
+            fecharModal() {
+                this.showModal = false;
+                this.urlOriginal = '';
+                this.qrCodeBase64 = '';
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

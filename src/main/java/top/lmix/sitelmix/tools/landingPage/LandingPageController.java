@@ -1,20 +1,24 @@
 package top.lmix.sitelmix.tools.landingPage;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import top.lmix.sitelmix.tools.shortener.UrlService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("")
+@RequiredArgsConstructor
 public class LandingPageController {
+
+    private final UrlService urlService;
 
     @GetMapping("/")
     public String root(HttpServletRequest request, Model model) {
         String host = request.getServerName();
 
-        long total = 20000; // Deve ser dinimico e puxar do BD e cachear também.
+        long total = urlService.contaQuantosInsertsTemNoBd();
         String versao = "Dos Caralhos";
         model.addAttribute("totalUrlsEncurtadas", total);
         model.addAttribute("versaoSistema", versao);
