@@ -5,6 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -14,12 +15,10 @@ public class UrlController {
 
     private final UrlService urlService;
 
-    @GetMapping("/encurtador")
-    public String encurtador(Model model){
+    @GetMapping(value="/encurtador", headers = "host=site.lmix.top")
+    public String encurtador(Model model, HttpServletRequest request){
         long total = urlService.contaQuantosInsertsTemNoBd();
-        String versao = "Dos Caralhos";
         model.addAttribute("totalUrlsEncurtadas", total);
-        model.addAttribute("versaoSistema", versao);
 
         return "encurtador";
     }

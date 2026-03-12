@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>404 | Página não encontrada</title>
+
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+
+    <style>
+        body { overflow-x: hidden; }
+    </style>
+</head>
+
+<body class="bg-base-200 min-h-screen flex flex-col">
+
+<!-- Navbar fixo -->
+<nav class="fixed top-0 left-0 w-full z-50">
+    <div th:replace="~{fragments :: navbar-principal}"></div>
+</nav>
+
+<!-- Main com padding-top para não ficar atrás do navbar -->
+<main class="flex-grow flex items-center justify-center px-6 py-16 pt-32">
+    <div class="max-w-2xl text-center">
+
+        <div class="text-8xl mb-8 select-none">
+            🧭
+        </div>
+
+        <h1 class="text-6xl font-bold text-primary mb-4">
+            404
+        </h1>
+
+        <h2 class="text-2xl md:text-3xl font-semibold mb-4">
+            Página não encontrada
+        </h2>
+
+        <p class="text-base-content/70 text-lg mb-10 leading-relaxed">
+            O recurso que você tentou acessar não existe,
+            pode ter sido removido ou o link está incorreto.
+            A internet é grande e às vezes os caminhos simplesmente acabam.
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-4">
+
+            <a th:href="@{/}"
+               class="btn btn-primary shadow-lg">
+                Voltar para o início
+            </a>
+
+            <a th:href="@{/encurtador}"
+               class="btn btn-outline btn-secondary">
+                Criar URL curta
+            </a>
+
+        </div>
+
+        <div class="mt-12 text-sm text-base-content/50 italic">
+            Se você chegou aqui através de um link encurtado,
+            ele pode ter expirado ou nunca ter existido.
+        </div>
+
+    </div>
+</main>
+
+<section class="py-16 bg-base-300/50 border-t border-base-300">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+
+        <h3 class="text-2xl font-bold mb-6">
+            Enquanto isso, explore as ferramentas
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+
+            <a href="/encurtador"
+               class="card bg-base-100 shadow-xl border border-base-300 hover:border-primary hover:-translate-y-1 transition-all">
+                <div class="card-body items-center text-center">
+                    <span class="text-4xl">🔗</span>
+                    <h4 class="card-title text-primary">
+                        Encurtador de URL
+                    </h4>
+                    <p class="text-sm opacity-70">
+                        Transforme links longos em URLs curtas e fáceis de compartilhar.
+                    </p>
+                </div>
+            </a>
+
+            <a href="/uuid"
+               class="card bg-base-100 shadow-xl border border-base-300 hover:border-accent hover:-translate-y-1 transition-all">
+                <div class="card-body items-center text-center">
+                    <span class="text-4xl">🆔</span>
+                    <h4 class="card-title text-accent">
+                        Gerador de UUID
+                    </h4>
+                    <p class="text-sm opacity-70">
+                        Gere identificadores únicos instantaneamente.
+                    </p>
+                </div>
+            </a>
+
+            <a href="/json"
+               class="card bg-base-100 shadow-xl border border-base-300 hover:border-secondary hover:-translate-y-1 transition-all">
+                <div class="card-body items-center text-center">
+                    <span class="text-4xl">📦</span>
+                    <h4 class="card-title text-secondary">
+                        Conversor de JSON
+                    </h4>
+                    <p class="text-sm opacity-70">
+                        Formate e valide seus documentos JSON rapidamente.
+                    </p>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments :: footer-principal}"></div>
+
+</body>
+</html>
