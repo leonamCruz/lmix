@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasheadores | lmix.top</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+    <link rel="icon" th:href="@{/imgs/favicon.ico}">
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col" x-data="hashTool()">
+    <div th:replace="~{fragments :: navbar-principal}"></div>
+
+    <main class="flex-grow container mx-auto px-4 pt-24 pb-10 max-w-4xl">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-2">🔐 Gerador de <span class="text-secondary">Hash</span></h1>
+            <p class="opacity-70">Gere hashes MD5, SHA-1 e SHA-256 instantaneamente.</p>
+        </div>
+
+        <div class="card bg-base-200 shadow-xl border border-base-300">
+            <div class="card-body gap-6">
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text font-semibold">Texto de entrada:</span>
+                    </label>
+                    <textarea x-model="input" @input.debounce.200ms="gerarHashes()"
+                        placeholder="Digite ou cole seu texto aqui..."
+                        class="textarea textarea-bordered textarea-secondary w-full h-32 text-lg focus:ring-2 ring-secondary/20"></textarea>
+                </div>
+
+                <div class="divider">
+                    <span x-show="!loading" class="text-sm font-bold opacity-50">RESULTADOS</span>
+                    <div x-show="loading" x-cloak>
+                        <span class="loading loading-dots loading-md text-secondary"></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <template x-for="alg in algoritmos" :key="alg.id">
+                        <div class="form-control">
+                            <label class="label pt-0">
+                                <span class="label-text font-bold uppercase text-secondary" x-text="alg.label"></span>
+                            </label>
+                            <div class="join w-full shadow-sm">
+                                <input type="text" 
+                                    :value="resultados[alg.id] || 'Aguardando entrada...'" 
+                                    readonly
+                                    class="input input-bordered join-item w-full bg-base-300 font-mono text-sm border-secondary/10" />
+                                
+                                <button @click="copy(resultados[alg.id])" 
+                                        class="btn btn-secondary join-item px-6"
+                                        :disabled="!resultados[alg.id]">
+                                    Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="text-center mt-4" x-show="input.length > 0" x-cloak>
+                    <button @click="input = ''; resultados = {}; lastInput = ''" class="btn btn-ghost btn-xs text-error opacity-60 hover:opacity-100">
+                        Limpar tudo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments :: footer-principal}"></div>
+
+    <script>
+        function hashTool() {
+            return {
+                input: '',
+                lastInput: '',
+                loading: false,
+                algoritmos: [
+                    { id: 'MD5', label: 'MD5' },
+                    { id: 'SHA1', label: 'SHA-1' },
+                    { id: 'SHA256', label: 'SHA-256' }
+                ],
+                resultados: {},
+                
+                async gerarHashes() {
+                    const textoLimpo = this.input.trim();
+                    
+                    if (!textoLimpo) {
+                        this.resultados = {};
+                        this.lastInput = '';
+                        return;
+                    }
+
+                    if (textoLimpo === this.lastInput) return;
+
+                    this.loading = true;
+                    this.lastInput = textoLimpo;
+
+                    try {
+                        const response = await fetch('/genHash', { 
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ texto: textoLimpo })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            // Agora resultados['MD5'] vai funcionar porque data tem a chave 'MD5'
+                            this.resultados = { ...data };
+                        } else {
+                            console.error("Erro no servidor:", response.status);
+                        }
+                    } catch (e) {
+                        console.error("Erro na comunicação:", e);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                copy(text) {
+                    if (!text || text.includes('Aguardando')) return;
+                    navigator.clipboard.writeText(text);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

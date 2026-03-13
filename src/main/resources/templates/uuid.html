@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de UUID | lmix.top</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Garante que o corpo ocupe a tela toda para centralizar */
+        html, body { height: 100%; }
+    </style>
+    <link rel="icon" th:href="@{/imgs/favicon.ico}">
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col">
+    <div th:replace="~{fragments :: navbar-principal}"></div>
+
+    <main class="pt-32 flex-grow flex items-center justify-center p-4">
+        <div class="card w-full max-w-2xl bg-base-200 shadow-2xl border border-accent/20" 
+             x-data="{ 
+                uuid: '', 
+                copied: false,
+                loading: false,
+                init() {
+                    this.uuid = $refs.uuidText.innerText.trim();
+                },
+                async generateNew() {
+                    this.loading = true;
+                    try {
+                        // Chamada assíncrona para não recarregar a página
+                        const response = await fetch('/genUuid');
+                        const data = await response.text(); 
+                        this.uuid = data;
+                    } catch (e) {
+                        console.error('Erro ao gerar UUID', e);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                copyToClipboard() {
+                    navigator.clipboard.writeText(this.uuid);
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                }
+             }">
+            
+            <div class="card-body items-center text-center gap-6">
+                <div class="flex flex-col items-center gap-2">
+                    <span class="text-6xl mb-2" :class="loading ? 'animate-pulse' : ''">🆔</span>
+                    <h1 class="card-title text-3xl font-bold text-accent">Gerador de UUID</h1>
+                    <p class="text-base-content/60">Identificador Único Universal (Versão 4)</p>
+                </div>
+
+                <div class="w-full bg-base-300 p-6 rounded-xl border-2 border-dashed border-accent/30 relative group">
+                    <code x-ref="uuidText"
+                          x-text="uuid"
+                          th:text="${uuid}"
+                          class="text-xl md:text-2xl font-mono text-success break-all select-all">
+                        00000000-0000-0000-0000-000000000000
+                    </code>
+                    
+                    <button @click="copyToClipboard" 
+                            class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 w-full relative">
+                    <button @click="generateNew" class="btn btn-accent px-8 shadow-lg" :class="loading ? 'loading' : ''">
+                        <svg x-show="!loading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Gerar Novo
+                    </button>
+
+                    <button @click="copyToClipboard" 
+                            class="btn btn-outline" 
+                            :class="copied ? 'btn-success' : 'btn-ghost'">
+                        <span x-text="copied ? 'Copiado!' : 'Copiar UUID'"></span>
+                    </button>
+
+                    <div x-show="copied" x-cloak x-transition
+                         class="absolute -bottom-12 flex items-center gap-2 text-success font-bold">
+                        <span>✓ Copiado!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments :: footer-principal}"></div>
+</body>
+</html>

@@ -1,5 +1,7 @@
 package top.lmix.sitelmix.tools.landingPage;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +25,6 @@ public class LandingPageController {
         return "index";
     }
 
-    @GetMapping(value = "/not-found", headers = "host=site.lmix.top")
-    public String notFound() {
-        return "not-found";
-    }
-
     @GetMapping(value = "/", headers = "host=lmix.top")
     public ResponseEntity<Void> redirectRaiz() {
         return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
@@ -41,4 +38,5 @@ public class LandingPageController {
         model.addAttribute("totalUrlsEncurtadas", total);
         return "error/404";
     }
+
 }

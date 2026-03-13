@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lmix.top | Testador de Cron</title>
+
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+
+    <style>
+
+        [x-cloak]{display:none!important}
+
+        body{overflow-x:hidden}
+
+        .cron-field{transition:all .25s ease}
+        .cron-field:focus{outline:none}
+
+        .result-row{
+            animation:fadeSlideIn .35s ease forwards;
+            opacity:0
+        }
+
+        @keyframes fadeSlideIn{
+            from{opacity:0;transform:translateY(8px)}
+            to{opacity:1;transform:translateY(0)}
+        }
+
+        .badge-accent-soft{
+            background:oklch(var(--a)/.15);
+            color:oklch(var(--a));
+            border:1px solid oklch(var(--a)/.3)
+        }
+
+        .timeline-dot{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:oklch(var(--a));
+            flex-shrink:0;
+            margin-top:6px
+        }
+
+        .copy-btn{transition:transform .15s}
+        .copy-btn:active{transform:scale(.9)}
+
+        .glow-accent{
+            box-shadow:0 0 0 0 oklch(var(--a)/.4);
+            transition:box-shadow .3s
+        }
+
+        .glow-accent:focus-within{
+            box-shadow:0 0 0 4px oklch(var(--a)/.2)
+        }
+
+    </style>
+    <link rel="icon" th:href="@{/imgs/favicon.ico}">
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments :: navbar-principal}"></div>
+
+<main
+        class="flex-grow overflow-x-hidden"
+
+        x-data="{
+
+expr:'*/5 * * * *',
+
+loading:false,
+resultado:null,
+erro:null,
+copiado:false,
+
+exemplos:[
+{label:'A cada minuto',expr:'* * * * *'},
+{label:'A cada 5 min',expr:'*/5 * * * *'},
+{label:'A cada 10 min',expr:'*/10 * * * *'},
+{label:'Toda hora',expr:'0 * * * *'},
+{label:'Todo dia às 8h',expr:'0 8 * * *'},
+{label:'Toda segunda',expr:'0 9 * * 1'},
+{label:'Primeiro dia do mês',expr:'0 0 1 * *'},
+{label:'Às 23:59 todo dia',expr:'59 23 * * *'}
+],
+
+partes:[],
+
+get labels(){
+return['Minuto','Hora','Dia do mês','Mês','Dia da semana']
+},
+
+get coresLabels(){
+return[
+'badge-primary',
+'badge-secondary',
+'badge-accent',
+'badge-info',
+'badge-success'
+]
+},
+
+formatarData(dt){
+
+const d=new Date(dt)
+
+const dia=String(d.getDate()).padStart(2,'0')
+const mes=String(d.getMonth()+1).padStart(2,'0')
+const ano=d.getFullYear()
+
+const hora=String(d.getHours()).padStart(2,'0')
+const min=String(d.getMinutes()).padStart(2,'0')
+const seg=String(d.getSeconds()).padStart(2,'0')
+
+return `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`
+
+},
+
+async validar(){
+
+this.loading=true
+this.resultado=null
+this.erro=null
+
+const partes=this.expr.trim().split(/\s+/)
+
+this.partes=partes
+
+if(partes.length!==5){
+this.erro='Cron deve possuir exatamente 5 campos.'
+this.loading=false
+return
+}
+
+try{
+
+const res=await fetch('/cron',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({expressao:this.expr.trim()})
+})
+
+let data=null
+
+try{
+data=await res.json()
+}catch{}
+
+if(!res.ok){
+this.erro=data?.mensagem ?? 'Expressão Cron inválida.'
+return
+}
+
+this.resultado=data
+
+}catch(e){
+
+this.erro='Tente Novamente'
+
+}finally{
+
+this.loading=false
+
+}
+
+},
+
+usarExemplo(expr){
+
+this.expr=expr
+this.resultado=null
+this.erro=null
+
+this.$nextTick(()=>this.validar())
+
+},
+
+async copiar(texto){
+
+await navigator.clipboard.writeText(texto)
+
+this.copiado=true
+
+setTimeout(()=>this.copiado=false,1800)
+
+},
+
+init(){
+this.validar()
+}
+
+}"
+
+>
+
+    <section class="hero bg-base-200 py-16 pt-24 border-b border-base-300">
+
+        <div class="hero-content text-center">
+
+            <div class="max-w-xl px-4">
+
+                <div class="text-5xl mb-3">⏰</div>
+
+                <h1 class="text-4xl md:text-5xl font-bold">
+                    Testador de <span class="text-accent">Cron</span>
+                </h1>
+
+                <p class="py-4 text-base md:text-lg text-base-content/70">
+                    Valide expressões Cron, veja as próximas execuções e entenda cada campo com clareza.
+                </p>
+
+            </div>
+        </div>
+
+    </section>
+
+    <section class="py-12 px-4 md:px-10 max-w-5xl mx-auto w-full">
+
+        <div class="card bg-base-200 border border-base-300 shadow-xl mb-8">
+
+            <div class="card-body gap-5">
+
+                <h2 class="card-title text-lg text-accent">
+                    Expressão Cron
+                </h2>
+
+                <div class="glow-accent rounded-xl">
+
+                    <div class="flex gap-2 items-stretch">
+
+                        <label class="w-full">
+
+                            <input
+                                    type="text"
+                                    x-model="expr"
+                                    @keydown.enter="validar()"
+                                    @input.debounce.600ms="validar()"
+                                    placeholder="ex: */5 * * * *"
+                                    class="cron-field input input-bordered input-accent w-full font-mono text-lg tracking-widest bg-base-100 focus:border-accent"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                            />
+
+                        </label>
+
+                        <button
+                                @click="validar()"
+                                :disabled="loading || !expr.trim()"
+                                class="btn btn-accent min-w-[110px]"
+                        >
+
+<span x-show="!loading">
+Validar
+</span>
+
+                            <span
+                                    x-show="loading"
+                                    x-cloak
+                                    class="loading loading-spinner loading-sm"
+                            ></span>
+
+                        </button>
+
+                    </div>
+                </div>
+
+                <div
+                        x-show="expr.trim().length>0"
+                        class="flex flex-wrap gap-2 pt-1"
+                >
+
+                    <template x-for="(p,i) in partes" :key="i">
+
+                        <div :class="coresLabels[i] + ' badge badge-outline'">
+
+<span
+        class="opacity-50 text-xs"
+        x-text="labels[i] ?? 'Extra'"
+></span>
+
+                            <span
+                                    class="font-bold"
+                                    x-text="p"
+                            ></span>
+
+                        </div>
+
+                    </template>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="mb-8">
+
+            <p class="text-sm text-base-content/50 mb-3 font-semibold uppercase tracking-wider">
+                Exemplos rápidos
+            </p>
+
+            <div class="flex flex-wrap gap-2">
+
+                <template x-for="ex in exemplos" :key="ex.expr">
+
+                    <button
+                            @click="usarExemplo(ex.expr)"
+                            class="btn btn-sm btn-ghost border border-base-300 font-mono text-xs hover:border-accent hover:text-accent transition-colors"
+                    >
+
+<span
+        x-text="ex.label"
+        class="text-base-content/60 mr-1 font-sans"
+></span>
+
+                        <span x-text="ex.expr"></span>
+
+                    </button>
+
+                </template>
+
+            </div>
+        </div>
+
+        <div x-show="resultado || erro" x-cloak>
+
+            <div
+                    x-show="erro"
+                    class="alert alert-error shadow-lg mb-6"
+            >
+
+                <div>
+
+                    <p class="font-bold">
+                        Expressão inválida
+                    </p>
+
+                    <p
+                            class="text-sm opacity-80"
+                            x-text="erro"
+                    ></p>
+
+                </div>
+
+            </div>
+
+            <div x-show="resultado">
+
+                <div class="card bg-base-200 border border-accent/30 shadow-xl mb-6">
+
+                    <div class="card-body flex-row items-center gap-4 py-5 px-6">
+
+                        <div class="text-3xl">✅</div>
+
+                        <div class="flex-1">
+
+                            <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold mb-1">
+                                Descrição em português
+                            </p>
+
+                            <p
+                                    class="text-base-content font-semibold text-lg leading-snug"
+                                    x-text="resultado?.descricao ?? '—'"
+                            ></p>
+
+                        </div>
+
+                        <button
+                                @click="copiar(expr)"
+                                class="copy-btn btn btn-sm btn-ghost"
+                        >
+
+                            <span x-show="!copiado">📋</span>
+
+                            <span
+                                    x-show="copiado"
+                                    x-cloak
+                                    class="text-success"
+                            >✔</span>
+
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="card bg-base-200 border border-base-300 shadow-xl mb-6">
+
+                    <div class="card-body">
+
+                        <h3 class="font-bold text-base-content mb-4 flex items-center gap-2">
+                            <span class="text-accent">🗓</span>
+                            Próximas execuções
+                        </h3>
+
+                        <div class="divide-y divide-base-300">
+
+                            <template
+                                    x-for="(dt,idx) in (resultado?.proximasExecucoes ?? [])"
+                                    :key="idx"
+                            >
+
+                                <div
+                                        class="result-row flex items-start gap-3 py-3"
+                                        :style="`animation-delay:${idx*60}ms`"
+                                >
+
+                                    <div class="timeline-dot mt-1.5"></div>
+
+                                    <div class="flex-1">
+
+<span
+        class="font-mono text-sm text-base-content"
+        x-text="formatarData(dt)"
+></span>
+
+                                    </div>
+
+                                    <div
+                                            class="badge badge-accent-soft text-xs"
+                                            x-text="'#'+(idx+1)"
+                                    ></div>
+
+                                </div>
+
+                            </template>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div th:replace="~{fragments :: footer-principal}"></div>
+
+</body>
+</html>
