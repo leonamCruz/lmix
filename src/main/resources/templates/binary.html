@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradutor Binário | lmix.top</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col" x-data="binaryTool()">
+    <div th:replace="~{fragments :: navbar-principal}"></div>
+
+    <main class="flex-grow container mx-auto px-4 pt-24 pb-10 max-w-4xl">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-2">🔢 Tradutor <span class="text-secondary">Binário</span></h1>
+            <p class="opacity-70">Traduza texto para binário e vice-versa instantaneamente.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Card Texto -->
+            <div class="card bg-base-200 shadow-xl border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary">
+                        <span class="text-2xl">🔤</span> Texto
+                    </h2>
+                    <div class="form-control w-full">
+                        <textarea x-model="textInput" @input.debounce.300ms="convert('ENCODE')"
+                            placeholder="Digite seu texto aqui..."
+                            class="textarea textarea-bordered textarea-secondary w-full h-64 text-lg focus:ring-2 ring-secondary/20 font-mono"></textarea>
+                    </div>
+                     <div class="card-actions justify-end mt-2">
+                        <button @click="copy(textInput)" class="btn btn-sm btn-ghost" :disabled="!textInput">
+                            Copiar
+                        </button>
+                        <button @click="clear()" class="btn btn-sm btn-ghost text-error">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Binário -->
+            <div class="card bg-base-200 shadow-xl border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title text-accent">
+                        <span class="text-2xl">0️⃣1️⃣</span> Binário
+                    </h2>
+                    <div class="form-control w-full">
+                        <textarea x-model="binaryInput" @input.debounce.300ms="convert('DECODE')"
+                            placeholder="01001000 01101001..."
+                            class="textarea textarea-bordered textarea-accent w-full h-64 text-lg focus:ring-2 ring-accent/20 font-mono"></textarea>
+                    </div>
+                     <div class="card-actions justify-end mt-2">
+                        <button @click="copy(binaryInput)" class="btn btn-sm btn-ghost" :disabled="!binaryInput">
+                            Copiar
+                        </button>
+                        <button @click="clear()" class="btn btn-sm btn-ghost text-error">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de Carregamento -->
+        <div class="text-center mt-8 h-8">
+            <span x-show="loading" x-cloak class="loading loading-dots loading-lg text-secondary"></span>
+        </div>
+
+    </main>
+
+    <div th:replace="~{fragments :: footer-principal}"></div>
+
+    <script>
+        function binaryTool() {
+            return {
+                textInput: '',
+                binaryInput: '',
+                loading: false,
+                lastSource: '', // 'text' or 'binary' to prevent loops if needed, though separate inputs helps
+                
+                async convert(mode) {
+                    this.loading = true;
+                    let payload = {};
+                    
+                    if (mode === 'ENCODE') {
+                        if (!this.textInput) {
+                            this.binaryInput = '';
+                            this.loading = false;
+                            return;
+                        }
+                        payload = { text: this.textInput, mode: 'ENCODE' };
+                    } else {
+                        if (!this.binaryInput) {
+                            this.textInput = '';
+                            this.loading = false;
+                            return;
+                        }
+                        payload = { text: this.binaryInput, mode: 'DECODE' };
+                    }
+
+                    try {
+                        const response = await fetch('/convertBinary', { 
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (mode === 'ENCODE') {
+                                this.binaryInput = data.result;
+                            } else {
+                                this.textInput = data.result;
+                            }
+                        } else {
+                            console.error("Erro no servidor:", response.status);
+                        }
+                    } catch (e) {
+                        console.error("Erro na comunicação:", e);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                copy(text) {
+                    if (!text) return;
+                    navigator.clipboard.writeText(text);
+                },
+
+                clear() {
+                    this.textInput = '';
+                    this.binaryInput = '';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
