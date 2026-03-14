@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lmix.top | Política de Privacidade</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col">
+<div th:replace="~{fragments :: navbar-principal}"></div>
+
+<main class="flex-grow overflow-x-hidden py-16 px-4 md:px-10 max-w-4xl mx-auto w-full">
+    <div class="text-center mb-12 pt-10">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+            Política de <span class="text-primary">Privacidade</span>
+        </h1>
+        <p class="text-lg text-base-content/70">
+            Transparência total sobre como lidamos com as informações que passam por aqui.
+        </p>
+    </div>
+
+    <div class="join join-vertical w-full shadow-xl">
+
+        <div class="collapse collapse-arrow join-item border border-base-300 bg-base-100">
+            <input type="radio" name="privacy-accordion" checked="checked" />
+            <div class="collapse-title text-xl font-medium text-primary">
+                1. Coleta de Dados
+            </div>
+            <div class="collapse-content text-base-content/80 leading-relaxed">
+                <p>
+                    Aqui o seu dado é apenas o insumo para a ferramenta funcionar. O único dado que coletamos é
+                    exatamente a informação que você insere voluntariamente nos campos do site (como um link para
+                    ser encurtado).
+                </p>
+                <p class="mt-2">
+                    <strong>Nós não associamos esses dados a você.</strong> Não rastreamos, não
+                    coletamos e não armazenamos o seu endereço de IP, sua localização, modelo do seu dispositivo
+                    ou qualquer outro dado que possa te identificar.
+                </p>
+            </div>
+        </div>
+
+        <div class="collapse collapse-arrow join-item border border-base-300 bg-base-100">
+            <input type="radio" name="privacy-accordion" />
+            <div class="collapse-title text-xl font-medium text-secondary">
+                2. Processamento e Armazenamento
+            </div>
+            <div class="collapse-content text-base-content/80 leading-relaxed">
+                <p>
+                    Todo o processamento pesado e conversão de dados acontece exclusivamente no nosso <strong>backend</strong>,
+                    garantindo que o seu navegador não fique sobrecarregado. Para a maioria das ferramentas, o dado entra,
+                    é processado, devolvido para você e descartado imediatamente.
+                </p>
+                <p class="mt-2">
+                    A única exceção a esta regra é o <strong>Encurtador de URL</strong>. Para que o redirecionamento
+                    funcione posteriormente, precisamos salvar o link original e a chave gerada em nosso Banco de Dados
+                    (SQLite). Ainda assim, essas URLs salvas são totalmente anônimas e não possuem vínculo com quem as criou.
+                </p>
+            </div>
+        </div>
+
+        <div class="collapse collapse-arrow join-item border border-base-300 bg-base-100">
+            <input type="radio" name="privacy-accordion" />
+            <div class="collapse-title text-xl font-medium text-accent">
+                3. Cookies e Rastreamento de Terceiros
+            </div>
+            <div class="collapse-content text-base-content/80 leading-relaxed">
+                <p>
+                    Nosso foco é fornecer utilitários rápidos e limpos para desenvolvedores. Portanto, nosso site
+                    <strong>não utiliza</strong> cookies de rastreamento, Google Analytics, pixels de redes sociais
+                    ou qualquer script de terceiros focado em publicidade direcionada. A sua navegação por aqui é
+                    estritamente sua.
+                </p>
+            </div>
+        </div>
+
+        <div class="collapse collapse-arrow join-item border border-base-300 bg-base-100">
+            <input type="radio" name="privacy-accordion" />
+            <div class="collapse-title text-xl font-medium">
+                4. Dúvidas e Contato
+            </div>
+            <div class="collapse-content text-base-content/80 leading-relaxed">
+                <p>
+                    A transparência é um pilar do projeto. Se você tiver qualquer dúvida sobre como as ferramentas
+                    funcionam sob o capô, ou quiser falar sobre a nossa política, sinta-se à vontade para enviar um e-mail:
+                </p>
+                <div class="mt-4 bg-base-200 p-4 rounded-lg inline-block">
+                    <span class="text-2xl mr-2">✉️</span>
+                    <a href="mailto:dev@leonam.top" class="link link-primary font-bold text-lg hover:text-primary-focus transition-colors">
+                        dev@leonam.top
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments :: footer-principal}"></div>
+</body>
+
+</html>

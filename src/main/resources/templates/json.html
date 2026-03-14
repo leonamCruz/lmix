@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor JSON | lmix.top</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .code-editor {
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            line-height: 1.5;
+        }
+    </style>
+    <link rel="icon" th:href="@{/imgs/favicon.ico}">
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col" x-data="jsonTool()">
+    <div th:replace="~{fragments :: navbar-principal}"></div>
+
+    <main class="flex-grow container mx-auto px-4 pt-24 pb-10 max-w-6xl">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-2">📦 Conversor <span class="text-secondary">JSON</span></h1>
+            <p class="opacity-70">Formate, valide e minifique seus objetos JSON.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
+            <!-- Entrada -->
+            <div class="flex flex-col h-full">
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <span class="font-bold text-secondary">Entrada</span>
+                    <button @click="input = ''; output = ''; valid = true; error = ''" class="btn btn-xs btn-ghost text-error">Limpar</button>
+                </div>
+                <textarea x-model="input" @input.debounce.500ms="process('FORMAT')"
+                    placeholder='Cole seu JSON aqui... {"exemplo": true}'
+                    class="textarea textarea-bordered textarea-secondary w-full h-full code-editor text-sm resize-none focus:ring-2 ring-secondary/20"
+                    :class="!valid ? 'textarea-error' : ''"></textarea>
+                <div x-show="!valid" x-cloak class="text-error text-xs mt-2 font-mono bg-error/10 p-2 rounded" x-text="error ? 'JSON inválido: ' + error : 'O JSON inserido é inválido. Por favor, verifique a sintaxe.'"></div>
+            </div>
+
+            <!-- Saída -->
+            <div class="flex flex-col h-full">
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <span class="font-bold text-success">Resultado</span>
+                    <div class="join">
+                        <button @click="process('FORMAT')" class="btn btn-xs join-item" :class="mode === 'FORMAT' ? 'btn-active' : ''">Formatar</button>
+                        <button @click="process('MINIFY')" class="btn btn-xs join-item" :class="mode === 'MINIFY' ? 'btn-active' : ''">Minificar</button>
+                        <button @click="copy()" class="btn btn-xs btn-success join-item text-white">Copiar</button>
+                    </div>
+                </div>
+                <div class="relative h-full">
+                    <textarea readonly x-model="output"
+                        class="textarea textarea-bordered w-full h-full code-editor text-sm resize-none bg-base-200 text-base-content/80 font-mono"></textarea>
+                    
+                    <div x-show="loading" class="absolute inset-0 bg-base-100/50 flex items-center justify-center backdrop-blur-[1px]">
+                        <span class="loading loading-spinner text-secondary"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments :: footer-principal}"></div>
+
+    <script>
+        function jsonTool() {
+            return {
+                input: '',
+                output: '',
+                mode: 'FORMAT',
+                valid: true,
+                error: '',
+                loading: false,
+                
+                async process(newMode) {
+                    if (newMode) this.mode = newMode;
+                    
+                    if (!this.input.trim()) {
+                        this.output = '';
+                        this.valid = true;
+                        this.error = '';
+                        return;
+                    }
+
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/processJson', { 
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                json: this.input,
+                                mode: this.mode
+                            })
+                        });
+
+                        const data = await response.json();
+                        
+                        this.valid = data.valid;
+                        if (data.valid) {
+                            this.output = data.result;
+                            this.error = '';
+                        } else {
+                            this.error = data.error;
+                            // Mantém o output anterior ou limpa? Vamos limpar para indicar erro visualmente
+                            // ou podemos não atualizar o output. Vamos optar por não atualizar o output se for inválido,
+                            // mas mostrar a msg de erro.
+                        }
+                    } catch (e) {
+                        console.error('Erro de conexão', e);
+                        this.error = 'Erro de comunicação com o servidor.';
+                        this.valid = false;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                copy() {
+                    if (!this.output) return;
+                    navigator.clipboard.writeText(this.output);
+                    // Feedback opcional
+                }
+            }
+        }
+    </script>
+</body>
+</html>

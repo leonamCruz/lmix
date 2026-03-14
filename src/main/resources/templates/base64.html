@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor Base64 | lmix.top</title>
+    <th:block th:replace="~{fragments :: head-comum}"></th:block>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+    <link rel="icon" th:href="@{/imgs/favicon.ico}">
+</head>
+
+<body class="bg-base-100 min-h-screen flex flex-col" x-data="base64Tool()">
+    <div th:replace="~{fragments :: navbar-principal}"></div>
+
+    <main class="flex-grow container mx-auto px-4 pt-24 pb-10 max-w-4xl">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-2">📦 Conversor <span class="text-primary">Base64</span></h1>
+            <p class="opacity-70">Codifique e decodifique Base64 instantaneamente.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Card Texto -->
+            <div class="card bg-base-200 shadow-xl border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title text-primary">
+                        <span class="text-2xl">📄</span> Texto Plano
+                    </h2>
+                    <div class="form-control w-full">
+                        <textarea x-model="textInput" @input.debounce.300ms="convert('ENCODE')"
+                            placeholder="Digite seu texto para codificar..."
+                            class="textarea textarea-bordered textarea-primary w-full h-64 text-lg focus:ring-2 ring-primary/20 font-mono"></textarea>
+                    </div>
+                     <div class="card-actions justify-end mt-2">
+                        <button @click="copy(textInput)" class="btn btn-sm btn-ghost" :disabled="!textInput">
+                            Copiar
+                        </button>
+                        <button @click="clear()" class="btn btn-sm btn-ghost text-error">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Base64 -->
+            <div class="card bg-base-200 shadow-xl border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title text-secondary">
+                        <span class="text-2xl">🔒</span> Base64
+                    </h2>
+                    <div class="form-control w-full">
+                        <textarea x-model="base64Input" @input.debounce.300ms="convert('DECODE')"
+                            placeholder="SGVsbGoy..."
+                            class="textarea textarea-bordered textarea-secondary w-full h-64 text-lg focus:ring-2 ring-secondary/20 font-mono"></textarea>
+                    </div>
+                     <div class="card-actions justify-end mt-2">
+                        <button @click="copy(base64Input)" class="btn btn-sm btn-ghost" :disabled="!base64Input">
+                            Copiar
+                        </button>
+                        <button @click="clear()" class="btn btn-sm btn-ghost text-error">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de Carregamento -->
+        <div class="text-center mt-8 h-8">
+            <span x-show="loading" x-cloak class="loading loading-dots loading-lg text-primary"></span>
+        </div>
+
+    </main>
+
+    <div th:replace="~{fragments :: footer-principal}"></div>
+
+    <script>
+        function base64Tool() {
+            return {
+                textInput: '',
+                base64Input: '',
+                loading: false,
+                
+                async convert(mode) {
+                    this.loading = true;
+                    let payload = {};
+                    
+                    if (mode === 'ENCODE') {
+                        if (!this.textInput) {
+                            this.base64Input = '';
+                            this.loading = false;
+                            return;
+                        }
+                        payload = { text: this.textInput, mode: 'ENCODE' };
+                    } else {
+                        if (!this.base64Input) {
+                            this.textInput = '';
+                            this.loading = false;
+                            return;
+                        }
+                        payload = { text: this.base64Input, mode: 'DECODE' };
+                    }
+
+                    try {
+                        const response = await fetch('/convertBase64', { 
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (mode === 'ENCODE') {
+                                this.base64Input = data.result;
+                            } else {
+                                this.textInput = data.result;
+                            }
+                        } else {
+                            console.error("Erro no servidor:", response.status);
+                        }
+                    } catch (e) {
+                        console.error("Erro na comunicação:", e);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                copy(text) {
+                    if (!text) return;
+                    navigator.clipboard.writeText(text);
+                },
+
+                clear() {
+                    this.textInput = '';
+                    this.base64Input = '';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

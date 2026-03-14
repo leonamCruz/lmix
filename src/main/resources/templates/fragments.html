@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:x-transition="http://www.w3.org/1999/xhtml">
 <head th:fragment="head-comum">
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="icon" type="image/x-icon" th:href="@{/favicon}">
+    <link rel="icon" type="image/x-icon" th:href="@{/static/favicon.png}">
     <style>
         [x-cloak] { display: none !important; }
 
@@ -109,7 +109,7 @@
                     <div class="mega-menu-panel overflow-hidden">
                         <div class="grid grid-cols-3">
                             <div class="p-8 border-r border-white/5">
-                                <h3 class="text-[9px] font-black text-primary uppercase tracking-[0.4em] mb-6 opacity-50">Web & Traffic</h3>
+                                <h3 class="text-[9px] font-black text-primary uppercase tracking-[0.4em] mb-6 opacity-50">Web Tools</h3>
                                 <div class="space-y-5">
                                     <a href="/encurtador" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
                                         <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🔗</div>
@@ -125,18 +125,11 @@
                                             <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Dynamic Gen</div>
                                         </div>
                                     </a>
-                                    <a href="/whois" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
-                                        <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🔍</div>
-                                        <div>
-                                            <div class="font-bold text-white transition-colors" :class="h ? 'text-primary' : ''">Whois Looker</div>
-                                            <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Domain Info</div>
-                                        </div>
-                                    </a>
                                 </div>
                             </div>
 
                             <div class="p-8 border-r border-white/5 bg-white/[0.01]">
-                                <h3 class="text-[9px] font-black text-secondary uppercase tracking-[0.4em] mb-6 opacity-50">Data Engine</h3>
+                                <h3 class="text-[9px] font-black text-secondary uppercase tracking-[0.4em] mb-6 opacity-50">Data & Converters</h3>
                                 <div class="space-y-5">
                                     <a href="/json" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
                                         <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">📦</div>
@@ -145,25 +138,25 @@
                                             <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Formatter</div>
                                         </div>
                                     </a>
-                                    <a href="/hash" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
-                                        <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🔐</div>
-                                        <div>
-                                            <div class="font-bold text-white transition-colors" :class="h ? 'text-secondary' : ''">Hashes</div>
-                                            <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Crypto Check</div>
-                                        </div>
-                                    </a>
                                     <a href="/base64" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
-                                        <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🔠</div>
+                                        <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">📄</div>
                                         <div>
                                             <div class="font-bold text-white transition-colors" :class="h ? 'text-secondary' : ''">Base64</div>
                                             <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Encode/Decode</div>
+                                        </div>
+                                    </a>
+                                    <a href="/binario" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
+                                        <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🔢</div>
+                                        <div>
+                                            <div class="font-bold text-white transition-colors" :class="h ? 'text-secondary' : ''">Binário</div>
+                                            <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Translator</div>
                                         </div>
                                     </a>
                                 </div>
                             </div>
 
                             <div class="p-8">
-                                <h3 class="text-[9px] font-black text-accent uppercase tracking-[0.4em] mb-6 opacity-50">Dev Core</h3>
+                                <h3 class="text-[9px] font-black text-accent uppercase tracking-[0.4em] mb-6 opacity-50">Dev Utilities</h3>
                                 <div class="space-y-5">
                                     <a href="/uuid" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
                                         <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🆔</div>
@@ -177,6 +170,13 @@
                                         <div>
                                             <div class="font-bold text-white transition-colors" :class="h ? 'text-accent' : ''">Cron Tester</div>
                                             <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Schedule Debug</div>
+                                        </div>
+                                    </a>
+                                    <a href="/hash" x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false" class="flex items-center gap-4 group/i">
+                                        <div class="text-2xl transition-all duration-300" :class="h ? 'rotate-12 scale-125' : ''">🔐</div>
+                                        <div>
+                                            <div class="font-bold text-white transition-colors" :class="h ? 'text-accent' : ''">Hashes</div>
+                                            <div class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Crypto Check</div>
                                         </div>
                                     </a>
                                 </div>

@@ -29,9 +29,8 @@
                 async generateNew() {
                     this.loading = true;
                     try {
-                        // Chamada assíncrona para não recarregar a página
                         const response = await fetch('/genUuid');
-                        const data = await response.text(); 
+                        const data = await response.json(); 
                         this.uuid = data;
                     } catch (e) {
                         console.error('Erro ao gerar UUID', e);
