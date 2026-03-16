@@ -1,17 +1,22 @@
 package top.lmix.sitelmix.tools.cron;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
-import com.cronutils.descriptor.CronDescriptor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
-import java.util.*;
 
 @Service
 public class CronService {
@@ -22,7 +27,11 @@ public class CronService {
     public CronService() {
         CronDefinition definition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
         this.parser = new CronParser(definition);
-        this.descriptor = CronDescriptor.instance(new Locale("pt", "BR"));
+        Locale locale = new Locale.Builder()
+                .setLanguage("pt")
+                .setRegion("BR")
+                .build();
+        this.descriptor = CronDescriptor.instance(locale);
     }
 
     public Optional<CronResponse> validate(CronRequestDTO request) {
@@ -43,10 +52,10 @@ public class CronService {
                     .descricao(descricao)
                     .proximasExecucoes(proximasExecucoes)
                     .campos(campos)
-                    .build()
-            );
+                    .build());
 
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return Optional.empty();
     }
@@ -63,7 +72,8 @@ public class CronService {
 
             Optional<ZonedDateTime> next = executionTime.nextExecution(agora);
 
-            if (next.isEmpty()) break;
+            if (next.isEmpty())
+                break;
 
             ZonedDateTime dt = next.get();
 
